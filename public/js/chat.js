@@ -185,31 +185,29 @@ messageInput.addEventListener('focus', () => {
 
 // iOS 키보드 대응 개선
 if ('visualViewport' in window) {
-  let lastHeight = window.visualViewport.height;
-
   window.visualViewport.addEventListener('resize', () => {
-    const currentHeight = window.visualViewport.height;
-    const chatContainer = document.querySelector('.chat-container');
+    const inputContainer = document.querySelector('.input-container');
+    const viewportHeight = window.visualViewport.height;
 
-    // 키보드가 올라오는 경우 (높이가 줄어듦)
-    if (currentHeight < lastHeight) {
-      // 컨테이너 높이를 현재 뷰포트에 맞춤
-      if (chatContainer) {
-        chatContainer.style.height = `${currentHeight}px`;
-      }
+    // 키보드 높이만큼 입력창을 위로 올림
+    const offsetY = window.innerHeight - viewportHeight;
 
-      // 입력창이 보이도록 스크롤
-      setTimeout(() => {
-        messageInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 100);
+    if (offsetY > 0) {
+      // 키보드가 올라온 경우
+      inputContainer.style.transform = `translateY(-${offsetY}px)`;
+
+      // 메시지 컨테이너도 같이 올림
+      messagesContainer.style.paddingBottom = `${offsetY + 80}px`;
+
+      // 스크롤을 최하단으로
+      requestAnimationFrame(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
     } else {
-      // 키보드가 내려가는 경우
-      if (chatContainer) {
-        chatContainer.style.height = '100vh';
-      }
+      // 키보드가 내려간 경우
+      inputContainer.style.transform = '';
+      messagesContainer.style.paddingBottom = '';
     }
-
-    lastHeight = currentHeight;
   });
 }
 

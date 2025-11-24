@@ -41,6 +41,7 @@ body {
   gap: 12px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  transition: padding-bottom 0.2s ease-out;
 }
 
 /* Input Container */
@@ -52,6 +53,7 @@ body {
   position: sticky;
   bottom: 0;
   z-index: var(--z-modal);
+  transition: transform 0.2s ease-out;
 }
 
 .input-wrapper {
