@@ -156,6 +156,7 @@
   align-items: flex-end;
   gap: var(--spacing-sm);
   max-width: 70%;
+  margin-bottom: 12px;
 }
 
 .message--mine {
@@ -218,6 +219,7 @@
   color: var(--color-text-tertiary);
   font-size: var(--font-size-md);
   padding: var(--spacing-xs) 0;
+  margin-bottom: 12px;
 }
 
 /* ================================

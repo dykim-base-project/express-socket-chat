@@ -35,14 +35,12 @@ body {
 
 /* Messages Container */
 .messages-container {
-  flex: 1 1 auto;
-  overflow-y: auto;
+  flex: 1;
+  overflow-y: scroll;
   overflow-x: hidden;
   padding: var(--spacing-lg);
   padding-bottom: 100px; /* 최소 여백 확보 */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: block; /* flex에서 block으로 변경 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   min-height: 0;
