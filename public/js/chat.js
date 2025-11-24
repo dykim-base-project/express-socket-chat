@@ -330,6 +330,10 @@ if ('visualViewport' in window) {
       // 입력창을 키보드 위로 이동
       inputContainer.style.transform = `translateY(-${offsetY}px)`;
 
+      // 메시지 컨테이너의 하단 패딩을 키보드 높이만큼 증가
+      const inputHeight = inputContainer.offsetHeight;
+      messagesContainer.style.paddingBottom = `${inputHeight + offsetY + 20}px`;
+
       // 키보드 올라올 때 스크롤이 최하단이었다면 유지
       if (wasAtBottom) {
         setTimeout(() => {
@@ -340,6 +344,10 @@ if ('visualViewport' in window) {
       // 키보드가 내려간 경우
       keyboardVisible = false;
       inputContainer.style.transform = '';
+
+      // 메시지 컨테이너의 하단 패딩을 원래대로 복원
+      const inputHeight = inputContainer.offsetHeight;
+      messagesContainer.style.paddingBottom = `${inputHeight + 20}px`;
     }
   });
 
