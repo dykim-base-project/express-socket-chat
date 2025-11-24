@@ -95,9 +95,14 @@ function addMessage(nickname, message, timestamp, isMine = false) {
 
   // spacer 앞에 메시지 삽입
   const spacer = document.getElementById('bottom-spacer');
-  if (spacer) {
-    messagesContainer.insertBefore(messageEl, spacer);
-  } else {
+  try {
+    if (spacer && spacer.parentNode === messagesContainer) {
+      messagesContainer.insertBefore(messageEl, spacer);
+    } else {
+      messagesContainer.appendChild(messageEl);
+    }
+  } catch (error) {
+    console.error('Error inserting message:', error);
     messagesContainer.appendChild(messageEl);
   }
 
@@ -120,9 +125,14 @@ function addSystemMessage(message) {
 
   // spacer 앞에 메시지 삽입
   const spacer = document.getElementById('bottom-spacer');
-  if (spacer) {
-    messagesContainer.insertBefore(div, spacer);
-  } else {
+  try {
+    if (spacer && spacer.parentNode === messagesContainer) {
+      messagesContainer.insertBefore(div, spacer);
+    } else {
+      messagesContainer.appendChild(div);
+    }
+  } catch (error) {
+    console.error('Error inserting system message:', error);
     messagesContainer.appendChild(div);
   }
 
@@ -145,6 +155,11 @@ function scrollToBottom() {
   requestAnimationFrame(() => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   });
+
+  // 모바일 Safari 대비 fallback
+  setTimeout(() => {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }, 50);
 }
 
 function scrollToBottomIfAtBottom() {
