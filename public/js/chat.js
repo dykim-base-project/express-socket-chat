@@ -22,7 +22,7 @@ if (!myNickname) {
   window.location.href = '/';
 } else {
   chatTitle.textContent = `${myNickname}님의 채팅방`;
-  socket.emit('reconnect nickname', myNickname');
+  socket.emit('reconnect nickname', myNickname);
 }
 
 // ================================
