@@ -93,7 +93,14 @@ function createMessageElement(nickname, message, timestamp, isMine = false) {
 function addMessage(nickname, message, timestamp, isMine = false) {
   const messageEl = createMessageElement(nickname, message, timestamp, isMine);
   messagesContainer.appendChild(messageEl);
-  scrollToBottom();
+
+  // 본인 메시지는 항상 스크롤
+  // 타인 메시지는 스크롤이 최하단에 있을 때만 스크롤
+  if (isMine) {
+    scrollToBottom();
+  } else {
+    scrollToBottomIfAtBottom();
+  }
 }
 
 // ================================
@@ -110,11 +117,25 @@ function addSystemMessage(message) {
 // ================================
 // Utility Functions
 // ================================
+function isScrollAtBottom() {
+  const threshold = 100; // 100px 이내면 최하단으로 간주
+  const scrollTop = messagesContainer.scrollTop;
+  const scrollHeight = messagesContainer.scrollHeight;
+  const clientHeight = messagesContainer.clientHeight;
+  return scrollHeight - scrollTop - clientHeight < threshold;
+}
+
 function scrollToBottom() {
   // 모바일 성능 개선: requestAnimationFrame 사용
   requestAnimationFrame(() => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   });
+}
+
+function scrollToBottomIfAtBottom() {
+  if (isScrollAtBottom()) {
+    scrollToBottom();
+  }
 }
 
 function getCurrentTime() {
@@ -179,40 +200,42 @@ messageInput.addEventListener('input', () => {
 });
 
 // Mobile keyboard support - iOS 개선
-messageInput.addEventListener('focus', () => {
-  // 입력창 포커스 시 화면 스크롤 및 입력창이 보이도록 조정
-  setTimeout(() => {
-    messageInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 300);
-});
+let keyboardVisible = false;
 
-// iOS 키보드 대응 개선
 if ('visualViewport' in window) {
   window.visualViewport.addEventListener('resize', () => {
     const inputContainer = document.querySelector('.input-container');
     const viewportHeight = window.visualViewport.height;
-
-    // 키보드 높이만큼 입력창을 위로 올림
     const offsetY = window.innerHeight - viewportHeight;
 
     if (offsetY > 0) {
       // 키보드가 올라온 경우
+      keyboardVisible = true;
       inputContainer.style.transform = `translateY(-${offsetY}px)`;
 
-      // 메시지 컨테이너도 같이 올림
-      messagesContainer.style.paddingBottom = `${offsetY + 80}px`;
+      // 메시지 컨테이너 하단에 입력창 높이만큼 여유 공간 추가
+      const inputHeight = inputContainer.offsetHeight;
+      messagesContainer.style.paddingBottom = `${inputHeight}px`;
 
-      // 스크롤을 최하단으로
+      // 키보드가 올라올 때 스크롤이 최하단이었다면 계속 유지
       requestAnimationFrame(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        scrollToBottom();
       });
     } else {
       // 키보드가 내려간 경우
+      keyboardVisible = false;
       inputContainer.style.transform = '';
       messagesContainer.style.paddingBottom = '';
     }
   });
 }
+
+// 키보드 바깥 영역 터치 시 키보드 닫기
+messagesContainer.addEventListener('touchstart', () => {
+  if (keyboardVisible && document.activeElement === messageInput) {
+    messageInput.blur();
+  }
+});
 
 // Clear messages
 clearBtn.addEventListener('click', () => {
