@@ -231,6 +231,10 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--color-border-dark);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
 }
 
 .header__title {

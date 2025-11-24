@@ -20,6 +20,7 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
+  overflow: hidden;
 }
 
 /* Main Chat Area */
@@ -28,11 +29,13 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--color-bg-primary);
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Messages Container */
 .messages-container {
-  flex: 1;
+  flex: 1 1 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--spacing-lg);
@@ -44,6 +47,7 @@ body {
   transition: padding-bottom 0.2s ease-out;
   min-height: 0;
   box-sizing: border-box;
+  position: relative;
 }
 
 /* Input Container */
@@ -60,6 +64,7 @@ body {
   margin: 0 auto;
   z-index: var(--z-modal);
   transition: transform 0.2s ease-out;
+  flex-shrink: 0;
 }
 
 .input-wrapper {
