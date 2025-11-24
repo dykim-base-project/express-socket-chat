@@ -89,12 +89,14 @@ io.on('connection', (socket) => {
   socket.on('chat message', (data) => {
     const nickname = users.get(socket.id);
     if (nickname) {
-      // 본인 제외한 모든 사용자에게 메시지 전송
-      socket.broadcast.emit('chat message', {
+      const messageData = {
         nickname: nickname,
         message: data.message,
         timestamp: data.timestamp
-      });
+      };
+
+      // 본인 제외한 모든 사용자에게 메시지 전송
+      socket.broadcast.emit('chat message', messageData);
     }
   });
 

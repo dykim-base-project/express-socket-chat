@@ -144,6 +144,9 @@ function sendMessage() {
 
   messageInput.value = '';
   messageInput.style.height = 'auto';
+
+  // 모바일에서 키보드 유지를 위해 포커스 유지
+  messageInput.focus();
 }
 
 // ================================
