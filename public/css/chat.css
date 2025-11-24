@@ -8,9 +8,9 @@ body {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  position: fixed;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+  /* position: fixed 제거 - 모바일 키보드 대응 */
 }
 
 .chat-container {
@@ -39,7 +39,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--spacing-lg);
-  padding-bottom: 120px; /* 입력창 높이만큼 여백 확보 */
+  padding-bottom: 100px; /* 최소 여백 확보 */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -205,6 +205,7 @@ body {
 
   .messages-container {
     padding: var(--spacing-md) var(--spacing-sm);
+    /* padding-bottom은 JavaScript에서 동적으로 설정 */
   }
 
   .input-container {
@@ -221,6 +222,106 @@ body {
     padding: 10px 18px;
     font-size: var(--font-size-md);
   }
+
+  .header__actions {
+    gap: var(--spacing-xs);
+  }
+
+  #debugBtn {
+    padding: 6px 10px;
+  }
+}
+
+/* ================================
+   Debug Modal
+   ================================ */
+
+.debug-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+}
+
+.debug-modal--active {
+  display: block;
+}
+
+.debug-modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+}
+
+.debug-modal__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+
+.debug-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.debug-modal__header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+}
+
+.debug-modal__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.debug-modal__close:hover {
+  color: var(--color-text-primary);
+}
+
+.debug-modal__body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.debug-modal__body pre {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Courier New', monospace;
 }
 
 /* ================================

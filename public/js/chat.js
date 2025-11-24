@@ -13,6 +13,53 @@ const sendBtn = document.getElementById('sendBtn');
 const clearBtn = document.getElementById('clearBtn');
 const exitBtn = document.getElementById('exitBtn');
 const chatTitle = document.getElementById('chatTitle');
+const debugBtn = document.getElementById('debugBtn');
+const debugModal = document.getElementById('debugModal');
+const debugCloseBtn = document.getElementById('debugCloseBtn');
+const debugLogs = document.getElementById('debugLogs');
+
+// ================================
+// Debug Logger
+// ================================
+const debugLogger = {
+  logs: [],
+  maxLogs: 100,
+
+  log: function(message, data = null) {
+    const timestamp = new Date().toLocaleTimeString('ko-KR');
+    const logEntry = {
+      timestamp,
+      message,
+      data: data ? JSON.stringify(data, null, 2) : null
+    };
+
+    this.logs.push(logEntry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs.shift();
+    }
+
+    // 원래 console.log도 호출
+    if (data) {
+      console.log(`[${timestamp}] ${message}`, data);
+    } else {
+      console.log(`[${timestamp}] ${message}`);
+    }
+  },
+
+  getLogs: function() {
+    return this.logs.map(log => {
+      let text = `[${log.timestamp}] ${log.message}`;
+      if (log.data) {
+        text += `\n${log.data}`;
+      }
+      return text;
+    }).join('\n\n');
+  },
+
+  clear: function() {
+    this.logs = [];
+  }
+};
 
 // ================================
 // User State
@@ -93,7 +140,7 @@ function createMessageElement(nickname, message, timestamp, isMine = false) {
 function addMessage(nickname, message, timestamp, isMine = false) {
   const messageEl = createMessageElement(nickname, message, timestamp, isMine);
 
-  console.log('[Mobile Debug] Adding message:', {
+  debugLogger.log('[Adding message]', {
     nickname,
     isMine,
     containerExists: !!messagesContainer,
@@ -105,7 +152,7 @@ function addMessage(nickname, message, timestamp, isMine = false) {
   // 항상 appendChild 사용 (모바일 호환성)
   messagesContainer.appendChild(messageEl);
 
-  console.log('[Mobile Debug] After append:', {
+  debugLogger.log('[After append]', {
     childCount: messagesContainer.children.length,
     scrollHeight: messagesContainer.scrollHeight
   });
@@ -233,10 +280,19 @@ messagesContainer.addEventListener('scroll', () => {
 });
 
 if ('visualViewport' in window) {
+  // visualViewport resize 이벤트 (iOS Safari 전용)
   window.visualViewport.addEventListener('resize', () => {
     const inputContainer = document.querySelector('.input-container');
     const viewportHeight = window.visualViewport.height;
-    const offsetY = window.innerHeight - viewportHeight;
+    const windowHeight = window.innerHeight;
+    const offsetY = windowHeight - viewportHeight;
+
+    debugLogger.log('[Keyboard event]', {
+      viewportHeight,
+      windowHeight,
+      offsetY,
+      keyboardVisible: offsetY > 0
+    });
 
     if (offsetY > 0) {
       // 키보드가 올라온 경우
@@ -256,6 +312,19 @@ if ('visualViewport' in window) {
       keyboardVisible = false;
       inputContainer.style.transform = '';
     }
+  });
+
+  // visualViewport scroll 이벤트 (스크롤 위치 보정)
+  window.visualViewport.addEventListener('scroll', () => {
+    debugLogger.log('[Viewport scroll]', {
+      pageTop: window.visualViewport.pageTop,
+      pageLeft: window.visualViewport.pageLeft
+    });
+  });
+} else {
+  // visualViewport 미지원 브라우저 (Android Chrome 등)
+  debugLogger.log('[visualViewport not supported]', {
+    userAgent: navigator.userAgent
   });
 }
 
@@ -281,6 +350,23 @@ exitBtn.addEventListener('click', () => {
     socket.disconnect();
     window.location.href = '/';
   }
+});
+
+// Debug Modal
+debugBtn.addEventListener('click', () => {
+  debugLogs.textContent = debugLogger.getLogs() || '로그가 없습니다.';
+  debugModal.classList.add('debug-modal--active');
+  document.body.style.overflow = 'hidden';
+});
+
+debugCloseBtn.addEventListener('click', () => {
+  debugModal.classList.remove('debug-modal--active');
+  document.body.style.overflow = '';
+});
+
+document.querySelector('.debug-modal__overlay').addEventListener('click', () => {
+  debugModal.classList.remove('debug-modal--active');
+  document.body.style.overflow = '';
 });
 
 // ================================
@@ -368,17 +454,39 @@ socket.on('connect', () => {
 // ================================
 // DOM 로드 완료 후 초기화
 function initializeLayout() {
-  console.log('[Mobile Debug] Initializing layout...');
-  console.log('[Mobile Debug] Messages container:', {
+  debugLogger.log('[Initializing layout]');
+
+  // 입력창 높이 계산하여 messages-container에 padding-bottom 설정
+  const inputContainer = document.querySelector('.input-container');
+  const inputHeight = inputContainer.offsetHeight;
+  messagesContainer.style.paddingBottom = `${inputHeight + 20}px`;
+
+  debugLogger.log('[Messages container]', {
     exists: !!messagesContainer,
     width: messagesContainer.offsetWidth,
     height: messagesContainer.offsetHeight,
     scrollHeight: messagesContainer.scrollHeight,
+    paddingBottom: messagesContainer.style.paddingBottom,
+    inputHeight: inputHeight,
     display: window.getComputedStyle(messagesContainer).display,
     overflow: window.getComputedStyle(messagesContainer).overflow,
     position: window.getComputedStyle(messagesContainer).position
   });
 }
+
+// 창 크기 변경 시 레이아웃 재계산
+window.addEventListener('resize', () => {
+  const inputContainer = document.querySelector('.input-container');
+  const inputHeight = inputContainer.offsetHeight;
+  messagesContainer.style.paddingBottom = `${inputHeight + 20}px`;
+
+  debugLogger.log('[Window resized]', {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    inputHeight: inputHeight,
+    newPaddingBottom: messagesContainer.style.paddingBottom
+  });
+});
 
 // DOM 로드 완료 후 레이아웃 초기화
 if (document.readyState === 'loading') {
