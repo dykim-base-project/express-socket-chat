@@ -264,6 +264,7 @@ sendBtn.addEventListener('click', sendMessage);
 
 // Enter key handler (with IME support)
 let isComposing = false;
+let lastShiftTime = 0;
 
 messageInput.addEventListener('compositionstart', () => {
   isComposing = true;
@@ -273,13 +274,34 @@ messageInput.addEventListener('compositionend', () => {
   isComposing = false;
 });
 
+// Shift 키 추적 (모바일 Safari 버그 대응)
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Shift') {
+    lastShiftTime = Date.now();
+  }
+});
+
 messageInput.addEventListener('keydown', (e) => {
   // Enter 키 체크: keyCode도 함께 확인 (일부 모바일 브라우저 호환성)
   const isEnterKey = e.key === 'Enter' || e.keyCode === 13;
 
-  // Shift+Enter는 줄바꿈 허용
-  // IME 조합 중이거나 다른 특수키 조합은 무시
-  if (isEnterKey && !e.shiftKey && !isComposing && !e.altKey && !e.ctrlKey && !e.metaKey) {
+  if (!isEnterKey) return;
+
+  // Shift 키가 실제로 눌렸는지 확인 (200ms 이내에 Shift가 눌렸는지)
+  const recentShiftPress = Date.now() - lastShiftTime < 200;
+  const isShiftEnter = e.shiftKey || recentShiftPress;
+
+  debugLogger.log('[Enter key]', {
+    key: e.key,
+    shiftKey: e.shiftKey,
+    recentShiftPress,
+    isComposing,
+    lastShiftTime,
+    timeSinceShift: Date.now() - lastShiftTime
+  });
+
+  // 실제 Shift+Enter가 아니고, IME 조합 중도 아니고, 다른 특수키 조합도 없으면 전송
+  if (!isShiftEnter && !isComposing && !e.altKey && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();
     sendMessage();
   }
