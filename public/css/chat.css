@@ -3,18 +3,15 @@
    ================================ */
 
 /* Layout */
-body {
+html, body {
+  margin: 0;
+  padding: 0;
   background: var(--color-bg-primary);
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
   width: 100%;
   -webkit-overflow-scrolling: touch;
-  position: fixed; /* 모바일에서 페이지 스크롤 방지 */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  /* position: fixed 제거 - 모바일 스크롤 문제 해결 */
 }
 
 .chat-container {
@@ -23,7 +20,11 @@ body {
   height: 100dvh;
   max-width: 1400px;
   margin: 0 auto;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow: hidden;
 }
 

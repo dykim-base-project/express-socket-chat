@@ -344,17 +344,20 @@ if ('visualViewport' in window) {
   });
 
   // visualViewport scroll 이벤트 (스크롤 위치 보정)
-  window.visualViewport.addEventListener('scroll', () => {
+  window.visualViewport.addEventListener('scroll', (e) => {
+    const pageTop = window.visualViewport.pageTop;
+
     debugLogger.log('[Viewport scroll]', {
-      pageTop: window.visualViewport.pageTop,
+      pageTop: pageTop,
       pageLeft: window.visualViewport.pageLeft
     });
 
     // 모바일에서 페이지가 스크롤되는 것을 방지
-    if (window.visualViewport.pageTop !== 0) {
+    if (pageTop !== 0) {
+      e.preventDefault();
       window.scrollTo(0, 0);
     }
-  });
+  }, { passive: false });
 } else {
   // visualViewport 미지원 브라우저 (Android Chrome 등)
   debugLogger.log('[visualViewport not supported]', {
@@ -565,11 +568,19 @@ window.addEventListener('resize', () => {
   });
 });
 
-// DOM 로드 완료 후 레이아웃 초기화
+// DOM 로드 완료 후 레이아웃 초기화 및 환영 메시지
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeLayout);
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeLayout();
+    // DOM이 완전히 로드된 후 환영 메시지 추가
+    setTimeout(() => {
+      addSystemMessage('채팅방에 오신 것을 환영합니다!');
+    }, 100);
+  });
 } else {
   initializeLayout();
+  // 이미 로드된 경우 바로 추가
+  setTimeout(() => {
+    addSystemMessage('채팅방에 오신 것을 환영합니다!');
+  }, 100);
 }
-
-addSystemMessage('채팅방에 오신 것을 환영합니다!');
