@@ -45,11 +45,12 @@ body {
   gap: 12px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  transition: padding-bottom 0.2s ease-out;
   min-height: 0;
   box-sizing: border-box;
   position: relative;
   width: 100%;
+  /* 모바일 터치 스크롤 최적화 */
+  touch-action: pan-y;
 }
 
 /* Input Container */
@@ -67,6 +68,9 @@ body {
   z-index: var(--z-modal);
   transition: transform 0.2s ease-out;
   flex-shrink: 0;
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .input-wrapper {

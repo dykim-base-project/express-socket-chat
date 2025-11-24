@@ -152,9 +152,13 @@ function addMessage(nickname, message, timestamp, isMine = false) {
   // 항상 appendChild 사용 (모바일 호환성)
   messagesContainer.appendChild(messageEl);
 
+  // 모바일에서 강제 리플로우 (렌더링 보장)
+  void messagesContainer.offsetHeight;
+
   debugLogger.log('[After append]', {
     childCount: messagesContainer.children.length,
-    scrollHeight: messagesContainer.scrollHeight
+    scrollHeight: messagesContainer.scrollHeight,
+    offsetHeight: messagesContainer.offsetHeight
   });
 
   // 본인 메시지는 항상 스크롤
@@ -192,9 +196,20 @@ function isScrollAtBottom() {
 }
 
 function scrollToBottom() {
+  debugLogger.log('[Scroll to bottom]', {
+    currentScrollTop: messagesContainer.scrollTop,
+    scrollHeight: messagesContainer.scrollHeight,
+    clientHeight: messagesContainer.clientHeight
+  });
+
   // 모바일 성능 개선: requestAnimationFrame 사용
   requestAnimationFrame(() => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    debugLogger.log('[After scroll]', {
+      newScrollTop: messagesContainer.scrollTop,
+      scrollHeight: messagesContainer.scrollHeight
+    });
   });
 
   // 모바일 Safari 대비 fallback
@@ -275,8 +290,21 @@ let keyboardVisible = false;
 let wasAtBottom = true;
 
 // 스크롤 위치 추적
+let lastScrollLog = 0;
 messagesContainer.addEventListener('scroll', () => {
   wasAtBottom = isScrollAtBottom();
+
+  // 로그 스팸 방지: 500ms마다 한 번만
+  const now = Date.now();
+  if (now - lastScrollLog > 500) {
+    debugLogger.log('[Scroll event]', {
+      scrollTop: messagesContainer.scrollTop,
+      scrollHeight: messagesContainer.scrollHeight,
+      clientHeight: messagesContainer.clientHeight,
+      wasAtBottom
+    });
+    lastScrollLog = now;
+  }
 });
 
 if ('visualViewport' in window) {
