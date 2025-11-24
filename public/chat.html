@@ -75,7 +75,10 @@
       <div class="debug-modal__content">
         <div class="debug-modal__header">
           <h3>디버그 로그</h3>
-          <button class="debug-modal__close" id="debugCloseBtn">✕</button>
+          <div class="debug-modal__actions">
+            <button class="btn btn--outline btn--sm" id="debugCopyBtn">복사</button>
+            <button class="debug-modal__close" id="debugCloseBtn">✕</button>
+          </div>
         </div>
         <div class="debug-modal__body">
           <pre id="debugLogs"></pre>

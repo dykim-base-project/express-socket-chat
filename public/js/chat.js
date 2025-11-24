@@ -16,6 +16,7 @@ const chatTitle = document.getElementById('chatTitle');
 const debugBtn = document.getElementById('debugBtn');
 const debugModal = document.getElementById('debugModal');
 const debugCloseBtn = document.getElementById('debugCloseBtn');
+const debugCopyBtn = document.getElementById('debugCopyBtn');
 const debugLogs = document.getElementById('debugLogs');
 
 // ================================
@@ -348,6 +349,11 @@ if ('visualViewport' in window) {
       pageTop: window.visualViewport.pageTop,
       pageLeft: window.visualViewport.pageLeft
     });
+
+    // 모바일에서 페이지가 스크롤되는 것을 방지
+    if (window.visualViewport.pageTop !== 0) {
+      window.scrollTo(0, 0);
+    }
   });
 } else {
   // visualViewport 미지원 브라우저 (Android Chrome 등)
@@ -390,6 +396,49 @@ debugBtn.addEventListener('click', () => {
 debugCloseBtn.addEventListener('click', () => {
   debugModal.classList.remove('debug-modal--active');
   document.body.style.overflow = '';
+});
+
+debugCopyBtn.addEventListener('click', async () => {
+  const logs = debugLogger.getLogs();
+  try {
+    // Clipboard API 사용
+    await navigator.clipboard.writeText(logs);
+
+    // 성공 피드백
+    const originalText = debugCopyBtn.textContent;
+    debugCopyBtn.textContent = '✓ 복사됨';
+    debugCopyBtn.style.backgroundColor = '#4CAF50';
+    debugCopyBtn.style.color = 'white';
+
+    setTimeout(() => {
+      debugCopyBtn.textContent = originalText;
+      debugCopyBtn.style.backgroundColor = '';
+      debugCopyBtn.style.color = '';
+    }, 2000);
+  } catch (err) {
+    // Clipboard API 실패 시 fallback
+    const textArea = document.createElement('textarea');
+    textArea.value = logs;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      debugCopyBtn.textContent = '✓ 복사됨';
+      setTimeout(() => {
+        debugCopyBtn.textContent = '복사';
+      }, 2000);
+    } catch (e) {
+      debugCopyBtn.textContent = '복사 실패';
+      setTimeout(() => {
+        debugCopyBtn.textContent = '복사';
+      }, 2000);
+    }
+
+    document.body.removeChild(textArea);
+  }
 });
 
 document.querySelector('.debug-modal__overlay').addEventListener('click', () => {

@@ -10,7 +10,11 @@ body {
   overflow: hidden;
   width: 100%;
   -webkit-overflow-scrolling: touch;
-  /* position: fixed 제거 - 모바일 키보드 대응 */
+  position: fixed; /* 모바일에서 페이지 스크롤 방지 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .chat-container {
@@ -289,6 +293,12 @@ body {
   margin: 0;
   font-size: var(--font-size-lg);
   color: var(--color-text-primary);
+}
+
+.debug-modal__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .debug-modal__close {
