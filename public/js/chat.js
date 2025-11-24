@@ -274,7 +274,12 @@ messageInput.addEventListener('compositionend', () => {
 });
 
 messageInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+  // Enter 키 체크: keyCode도 함께 확인 (일부 모바일 브라우저 호환성)
+  const isEnterKey = e.key === 'Enter' || e.keyCode === 13;
+
+  // Shift+Enter는 줄바꿈 허용
+  // IME 조합 중이거나 다른 특수키 조합은 무시
+  if (isEnterKey && !e.shiftKey && !isComposing && !e.altKey && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();
     sendMessage();
   }
