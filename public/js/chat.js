@@ -93,18 +93,22 @@ function createMessageElement(nickname, message, timestamp, isMine = false) {
 function addMessage(nickname, message, timestamp, isMine = false) {
   const messageEl = createMessageElement(nickname, message, timestamp, isMine);
 
-  // spacer 앞에 메시지 삽입
-  const spacer = document.getElementById('bottom-spacer');
-  try {
-    if (spacer && spacer.parentNode === messagesContainer) {
-      messagesContainer.insertBefore(messageEl, spacer);
-    } else {
-      messagesContainer.appendChild(messageEl);
-    }
-  } catch (error) {
-    console.error('Error inserting message:', error);
-    messagesContainer.appendChild(messageEl);
-  }
+  console.log('[Mobile Debug] Adding message:', {
+    nickname,
+    isMine,
+    containerExists: !!messagesContainer,
+    containerHeight: messagesContainer.offsetHeight,
+    containerScrollHeight: messagesContainer.scrollHeight,
+    messageElType: messageEl.tagName
+  });
+
+  // 항상 appendChild 사용 (모바일 호환성)
+  messagesContainer.appendChild(messageEl);
+
+  console.log('[Mobile Debug] After append:', {
+    childCount: messagesContainer.children.length,
+    scrollHeight: messagesContainer.scrollHeight
+  });
 
   // 본인 메시지는 항상 스크롤
   // 타인 메시지는 스크롤이 최하단에 있을 때만 스크롤
@@ -123,18 +127,8 @@ function addSystemMessage(message) {
   div.className = 'message--system';
   div.textContent = message;
 
-  // spacer 앞에 메시지 삽입
-  const spacer = document.getElementById('bottom-spacer');
-  try {
-    if (spacer && spacer.parentNode === messagesContainer) {
-      messagesContainer.insertBefore(div, spacer);
-    } else {
-      messagesContainer.appendChild(div);
-    }
-  } catch (error) {
-    console.error('Error inserting system message:', error);
-    messagesContainer.appendChild(div);
-  }
+  // 항상 appendChild 사용 (모바일 호환성)
+  messagesContainer.appendChild(div);
 
   scrollToBottom();
 }
@@ -276,16 +270,6 @@ messagesContainer.addEventListener('touchstart', () => {
 clearBtn.addEventListener('click', () => {
   if (confirm('채팅 내용을 모두 지우시겠습니까?')) {
     messagesContainer.innerHTML = '';
-
-    // spacer 다시 추가
-    const inputContainer = document.querySelector('.input-container');
-    const inputHeight = inputContainer.offsetHeight;
-    const spacer = document.createElement('div');
-    spacer.id = 'bottom-spacer';
-    spacer.style.height = `${inputHeight + 20}px`; // 20px 추가 여유
-    spacer.style.flexShrink = '0';
-    messagesContainer.appendChild(spacer);
-
     addSystemMessage('채팅 내용이 삭제되었습니다.');
   }
 });
@@ -382,19 +366,18 @@ socket.on('connect', () => {
 // ================================
 // Initialize
 // ================================
-// 초기 로드 시 메시지 컨테이너에 입력창 높이만큼 여백 추가
+// DOM 로드 완료 후 초기화
 function initializeLayout() {
-  const inputContainer = document.querySelector('.input-container');
-
-  // offsetHeight는 padding과 border 포함한 실제 높이
-  const inputHeight = inputContainer.offsetHeight;
-
-  // 빈 div를 추가하여 스크롤 공간 확보 (추가 여유 공간 포함)
-  const spacer = document.createElement('div');
-  spacer.id = 'bottom-spacer';
-  spacer.style.height = `${inputHeight + 20}px`; // 20px 추가 여유
-  spacer.style.flexShrink = '0';
-  messagesContainer.appendChild(spacer);
+  console.log('[Mobile Debug] Initializing layout...');
+  console.log('[Mobile Debug] Messages container:', {
+    exists: !!messagesContainer,
+    width: messagesContainer.offsetWidth,
+    height: messagesContainer.offsetHeight,
+    scrollHeight: messagesContainer.scrollHeight,
+    display: window.getComputedStyle(messagesContainer).display,
+    overflow: window.getComputedStyle(messagesContainer).overflow,
+    position: window.getComputedStyle(messagesContainer).position
+  });
 }
 
 // DOM 로드 완료 후 레이아웃 초기화
