@@ -201,6 +201,12 @@ messageInput.addEventListener('input', () => {
 
 // Mobile keyboard support - iOS 개선
 let keyboardVisible = false;
+let wasAtBottom = true;
+
+// 스크롤 위치 추적
+messagesContainer.addEventListener('scroll', () => {
+  wasAtBottom = isScrollAtBottom();
+});
 
 if ('visualViewport' in window) {
   window.visualViewport.addEventListener('resize', () => {
@@ -211,21 +217,20 @@ if ('visualViewport' in window) {
     if (offsetY > 0) {
       // 키보드가 올라온 경우
       keyboardVisible = true;
+
+      // 입력창을 키보드 위로 이동
       inputContainer.style.transform = `translateY(-${offsetY}px)`;
 
-      // 메시지 컨테이너 하단에 입력창 높이만큼 여유 공간 추가
-      const inputHeight = inputContainer.offsetHeight;
-      messagesContainer.style.paddingBottom = `${inputHeight}px`;
-
-      // 키보드가 올라올 때 스크롤이 최하단이었다면 계속 유지
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
+      // 키보드 올라올 때 스크롤이 최하단이었다면 유지
+      if (wasAtBottom) {
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
+      }
     } else {
       // 키보드가 내려간 경우
       keyboardVisible = false;
       inputContainer.style.transform = '';
-      messagesContainer.style.paddingBottom = '';
     }
   });
 }
@@ -337,4 +342,24 @@ socket.on('connect', () => {
 // ================================
 // Initialize
 // ================================
+// 초기 로드 시 메시지 컨테이너에 입력창 높이만큼 여백 추가
+function initializeLayout() {
+  const inputContainer = document.querySelector('.input-container');
+  const inputHeight = inputContainer.offsetHeight;
+
+  // 빈 div를 추가하여 스크롤 공간 확보
+  const spacer = document.createElement('div');
+  spacer.id = 'bottom-spacer';
+  spacer.style.height = `${inputHeight}px`;
+  spacer.style.flexShrink = '0';
+  messagesContainer.appendChild(spacer);
+}
+
+// DOM 로드 완료 후 레이아웃 초기화
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeLayout);
+} else {
+  initializeLayout();
+}
+
 addSystemMessage('채팅방에 오신 것을 환영합니다!');

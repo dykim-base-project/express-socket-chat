@@ -42,6 +42,8 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   transition: padding-bottom 0.2s ease-out;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 /* Input Container */
@@ -50,8 +52,12 @@ body {
   padding: var(--spacing-md) var(--spacing-lg);
   padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border-medium);
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 1400px;
+  margin: 0 auto;
   z-index: var(--z-modal);
   transition: transform 0.2s ease-out;
 }
