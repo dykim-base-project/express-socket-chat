@@ -1,0 +1,222 @@
+/* ================================
+   Chat Page Specific Styles
+   ================================ */
+
+/* Layout */
+body {
+  background: var(--color-bg-primary);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Main Chat Area */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-primary);
+}
+
+/* Messages Container */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Input Container */
+.input-container {
+  background: var(--color-bg-white);
+  padding: var(--spacing-md) var(--spacing-lg);
+  padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border-medium);
+  position: relative;
+  z-index: var(--z-modal);
+}
+
+.input-wrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+#messageInput {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-family: inherit;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#messageInput:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+}
+
+#sendBtn {
+  padding: 12px 25px;
+  background: var(--color-secondary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  white-space: nowrap;
+}
+
+#sendBtn:hover {
+  background: var(--color-secondary-dark);
+}
+
+#sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Side Panel */
+.side-panel {
+  width: 300px;
+  background: var(--color-bg-white);
+  border-left: 1px solid var(--color-border-medium);
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.side-panel h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-secondary);
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.shortcut-item {
+  padding: 12px;
+  background: var(--color-bg-light);
+  border-radius: var(--radius-md);
+}
+
+.shortcut-key {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.shortcut-desc {
+  font-size: var(--font-size-md);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+.info-section {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.info-section h4 {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+}
+
+.info-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.6;
+}
+
+/* Scrollbar Styles */
+.messages-container::-webkit-scrollbar,
+.side-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-track,
+.side-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb,
+.side-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+/* ================================
+   Responsive Design
+   ================================ */
+
+@media (max-width: 768px) {
+  .side-panel {
+    display: none;
+  }
+
+  .messages-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .input-container {
+    padding: 12px var(--spacing-sm);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  #messageInput {
+    font-size: var(--font-size-lg);
+    min-height: 40px;
+  }
+
+  #sendBtn {
+    padding: 10px 18px;
+    font-size: var(--font-size-md);
+  }
+}
+
+/* ================================
+   iOS Safari Support
+   ================================ */
+
+@supports (-webkit-touch-callout: none) {
+  body {
+    height: -webkit-fill-available;
+  }
+
+  .chat-container {
+    height: -webkit-fill-available;
+  }
+}

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>채팅방</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #b2c7d9;
+      height: 100vh;
+      height: 100dvh; /* 모바일 동적 뷰포트 높이 */
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-container {
+      display: flex;
+      height: 100vh;
+      height: 100dvh; /* 모바일 동적 뷰포트 높이 */
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* 채팅 영역 */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #b2c7d9;
+    }
+
+    /* 헤더 */
+    .chat-header {
+      background: #a0b4c7;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #8a9fb3;
+    }
+
+    .chat-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #3c1e1e;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .header-btn {
+      padding: 8px 15px;
+      background: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      transition: background 0.2s;
+    }
+
+    .header-btn:hover {
+      background: #f0f0f0;
+    }
+
+    /* 메시지 영역 */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* 시스템 메시지 */
+    .system-message {
+      text-align: center;
+      color: #666;
+      font-size: 13px;
+      padding: 5px 0;
+    }
+
+    /* 메시지 래퍼 */
+    .message-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 70%;
+    }
+
+    .message-wrapper.mine {
+      margin-left: auto;
+      flex-direction: row-reverse;
+    }
+
+    .message-wrapper.others {
+      margin-right: auto;
+    }
+
+    /* 닉네임 */
+    .nickname {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+      padding-left: 8px;
+    }
+
+    .message-wrapper.mine .nickname {
+      display: none;
+    }
+
+    /* 메시지 버블 */
+    .message-content {
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+    }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message-wrapper.mine .message-bubble {
+      background: #ffe200;
+      color: #3c1e1e;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-wrapper.others .message-bubble {
+      background: white;
+      color: #3c1e1e;
+      border-bottom-left-radius: 4px;
+    }
+
+    /* 타임스탬프 */
+    .timestamp {
+      font-size: 11px;
+      color: #666;
+      padding: 0 5px;
+      align-self: flex-end;
+    }
+
+    /* 입력 영역 */
+    .input-container {
+      background: white;
+      padding: 15px 20px;
+      padding-bottom: max(15px, env(safe-area-inset-bottom)); /* iOS 노치 대응 */
+      border-top: 1px solid #d0d0d0;
+      position: relative;
+      z-index: 100;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      font-size: 16px; /* iOS 자동 줌 방지 */
+      font-family: inherit;
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+      overflow-y: auto;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    #messageInput:focus {
+      outline: none;
+      border-color: #ffe200;
+    }
+
+    #sendBtn {
+      padding: 12px 25px;
+      background: #ffe200;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #3c1e1e;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #sendBtn:hover {
+      background: #ffd700;
+    }
+
+    #sendBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 사이드 패널 (단축키 설명) */
+    .side-panel {
+      width: 300px;
+      background: white;
+      border-left: 1px solid #d0d0d0;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .side-panel h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #333;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ffe200;
+    }
+
+    .shortcut-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .shortcut-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .shortcut-key {
+      font-weight: 600;
+      color: #667eea;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .shortcut-desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .info-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .info-section h4 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    /* 스크롤바 스타일 */
+    .messages-container::-webkit-scrollbar,
+    .side-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar-track,
+    .side-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb,
+    .side-panel::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .side-panel {
+        display: none;
+      }
+
+      .message-wrapper {
+        max-width: 85%;
+      }
+
+      .chat-header {
+        padding: 12px 15px;
+      }
+
+      .header-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .messages-container {
+        padding: 15px 10px;
+      }
+
+      .input-container {
+        padding: 12px 10px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+      }
+
+      #messageInput {
+        font-size: 16px; /* iOS 자동 줌 방지 */
+        min-height: 40px;
+      }
+
+      #sendBtn {
+        padding: 10px 18px;
+        font-size: 14px;
+      }
+    }
+
+    /* iOS Safari 키보드 대응 */
+    @supports (-webkit-touch-callout: none) {
+      body {
+        height: -webkit-fill-available;
+      }
+
+      .chat-container {
+        height: -webkit-fill-available;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- 메인 채팅 영역 -->
+    <div class="chat-main">
+      <!-- 헤더 -->
+      <div class="chat-header">
+        <div class="chat-title" id="chatTitle">채팅방</div>
+        <div class="header-buttons">
+          <button class="header-btn" id="clearBtn">채팅 클리어</button>
+          <button class="header-btn" id="exitBtn">나가기</button>
+        </div>
+      </div>
+
+      <!-- 메시지 영역 -->
+      <div class="messages-container" id="messagesContainer"></div>
+
+      <!-- 입력 영역 -->
+      <div class="input-container">
+        <div class="input-wrapper">
+          <textarea
+            id="messageInput"
+            placeholder="메시지를 입력하세요 (Enter: 전송, Shift+Enter: 줄바꿈)"
+            rows="1"
+          ></textarea>
+          <button id="sendBtn">전송</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 사이드 패널 (단축키 설명) -->
+    <div class="side-panel">
+      <h3>⌨️ 단축키 안내</h3>
+      <div class="shortcut-list">
+        <div class="shortcut-item">
+          <div class="shortcut-key">Enter</div>
+          <div class="shortcut-desc">메시지 전송</div>
+        </div>
+        <div class="shortcut-item">
+          <div class="shortcut-key">Shift + Enter</div>
+          <div class="shortcut-desc">줄바꿈 (여러 줄 입력)</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>💡 안내사항</h4>
+        <div class="info-text">
+          • 채팅 내용은 브라우저에만 저장됩니다<br>
+          • 새로고침 시 로그인 상태는 유지되지만 채팅 내용은 초기화됩니다<br>
+          • 채팅창이 길어지면 '채팅 클리어' 버튼으로 정리할 수 있습니다<br>
+          • 나의 메시지는 노란색, 다른 사용자는 흰색으로 표시됩니다
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const exitBtn = document.getElementById('exitBtn');
+    const chatTitle = document.getElementById('chatTitle');
+
+    // 닉네임 확인
+    const myNickname = localStorage.getItem('chatNickname');
+    if (!myNickname) {
+      // 닉네임이 없으면 메인 페이지로
+      window.location.href = '/';
+    } else {
+      chatTitle.textContent = `${myNickname}님의 채팅방`;
+      // 서버에 재연결 알림
+      socket.emit('reconnect nickname', myNickname);
+    }
+
+    // 알림 권한 요청
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // 페이지 가시성 추적
+    let isPageVisible = !document.hidden;
+    let originalTitle = document.title;
+    let unreadCount = 0;
+
+    document.addEventListener('visibilitychange', () => {
+      isPageVisible = !document.hidden;
+      if (isPageVisible) {
+        // 페이지가 보이면 카운트 초기화
+        unreadCount = 0;
+        document.title = originalTitle;
+      }
+    });
+
+    // 포커스 이벤트 추적
+    window.addEventListener('focus', () => {
+      isPageVisible = true;
+      unreadCount = 0;
+      document.title = originalTitle;
+    });
+
+    window.addEventListener('blur', () => {
+      isPageVisible = false;
+    });
+
+    // 랜덤 색상 생성 (본인 제외)
+    const userColors = new Map();
+    const colors = [
+      '#8B7FFF', '#FF6B9D', '#4ECDC4', '#FF8B6A',
+      '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'
+    ];
+
+    function getUserColor(nickname) {
+      if (!userColors.has(nickname)) {
+        const randomColor = colors[userColors.size % colors.length];
+        userColors.set(nickname, randomColor);
+      }
+      return userColors.get(nickname);
+    }
+
+    // 메시지 추가 함수
+    function addMessage(nickname, message, timestamp, isMine = false) {
+      const wrapper = document.createElement('div');
+      wrapper.className = `message-wrapper ${isMine ? 'mine' : 'others'}`;
+
+      const content = document.createElement('div');
+      content.className = 'message-content';
+
+      if (!isMine) {
+        const nicknameEl = document.createElement('div');
+        nicknameEl.className = 'nickname';
+        nicknameEl.textContent = nickname;
+        content.appendChild(nicknameEl);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.textContent = message;
+
+      if (!isMine) {
+        bubble.style.background = getUserColor(nickname);
+        bubble.style.color = 'white';
+      }
+
+      content.appendChild(bubble);
+      wrapper.appendChild(content);
+
+      const time = document.createElement('div');
+      time.className = 'timestamp';
+      time.textContent = timestamp;
+      wrapper.appendChild(time);
+
+      messagesContainer.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    // 시스템 메시지 추가
+    function addSystemMessage(message) {
+      const div = document.createElement('div');
+      div.className = 'system-message';
+      div.textContent = message;
+      messagesContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    // 하단 스크롤
+    function scrollToBottom() {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // 현재 시간 포맷
+    function getCurrentTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? '오후' : '오전';
+      const displayHours = hours % 12 || 12;
+      return `${ampm} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
+    }
+
+    // 메시지 전송
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      const timestamp = getCurrentTime();
+
+      // 내 메시지 화면에 표시
+      addMessage(myNickname, message, timestamp, true);
+
+      // 서버로 전송
+      socket.emit('chat message', {
+        message: message,
+        timestamp: timestamp
+      });
+
+      // 입력창 초기화
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    // 전송 버튼 클릭
+    sendBtn.addEventListener('click', sendMessage);
+
+    // Enter 키 처리 (한글 IME 조합 중복 방지)
+    let isComposing = false;
+
+    messageInput.addEventListener('compositionstart', () => {
+      isComposing = true;
+    });
+
+    messageInput.addEventListener('compositionend', () => {
+      isComposing = false;
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // 자동 높이 조절
+    messageInput.addEventListener('input', () => {
+      messageInput.style.height = 'auto';
+      messageInput.style.height = messageInput.scrollHeight + 'px';
+    });
+
+    // 모바일 키보드 대응 - 입력창 포커스 시 스크롤 하단으로
+    messageInput.addEventListener('focus', () => {
+      setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 300);
+    });
+
+    // 모바일 환경에서 키보드 올라올 때 메시지 영역 조정
+    if ('visualViewport' in window) {
+      window.visualViewport.addEventListener('resize', () => {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+
+        if (viewportHeight < windowHeight) {
+          // 키보드가 올라온 상태
+          document.body.style.height = `${viewportHeight}px`;
+        } else {
+          // 키보드가 내려간 상태
+          document.body.style.height = '100vh';
+        }
+      });
+    }
+
+    // 채팅 클리어
+    clearBtn.addEventListener('click', () => {
+      if (confirm('채팅 내용을 모두 지우시겠습니까?')) {
+        messagesContainer.innerHTML = '';
+        addSystemMessage('채팅 내용이 삭제되었습니다.');
+      }
+    });
+
+    // 나가기
+    exitBtn.addEventListener('click', () => {
+      if (confirm('채팅방을 나가시겠습니까?')) {
+        localStorage.removeItem('chatNickname');
+        socket.disconnect();
+        window.location.href = '/';
+      }
+    });
+
+    // 데스크톱 알림 표시
+    function showNotification(nickname, message) {
+      if (!isPageVisible && 'Notification' in window && Notification.permission === 'granted') {
+        const notification = new Notification(`${nickname}`, {
+          body: message,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: 'chat-message',
+          requireInteraction: false
+        });
+
+        // 알림 클릭 시 창 포커스
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+
+        // 5초 후 자동 닫기
+        setTimeout(() => notification.close(), 5000);
+      }
+    }
+
+    // 타이틀 알림 업데이트
+    function updateTitleNotification() {
+      if (!isPageVisible && unreadCount > 0) {
+        document.title = `(${unreadCount}) 새 메시지 - ${originalTitle}`;
+      }
+    }
+
+    // 소켓 이벤트 리스너
+    socket.on('chat message', (data) => {
+      addMessage(data.nickname, data.message, data.timestamp, false);
+
+      // 페이지가 보이지 않을 때만 알림
+      if (!isPageVisible) {
+        unreadCount++;
+        updateTitleNotification();
+        showNotification(data.nickname, data.message);
+      }
+    });
+
+    socket.on('user joined', (data) => {
+      addSystemMessage(`${data.nickname} 님이 입장하셨습니다.`);
+    });
+
+    socket.on('user left', (data) => {
+      addSystemMessage(`${data.nickname} 님이 퇴장하셨습니다.`);
+    });
+
+    // 연결 상태 모니터링
+    socket.on('disconnect', () => {
+      addSystemMessage('서버와의 연결이 끊어졌습니다.');
+    });
+
+    socket.on('connect', () => {
+      // 재연결 시 닉네임 복구
+      if (myNickname) {
+        socket.emit('reconnect nickname', myNickname);
+      }
+    });
+
+    // 페이지 로드 시 환영 메시지
+    addSystemMessage('채팅방에 오신 것을 환영합니다!');
+  </script>
+</body>
+</html>
