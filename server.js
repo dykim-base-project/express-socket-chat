@@ -118,6 +118,9 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
+const HOST = '0.0.0.0'; // 모든 IP에서 접근 허용 (도커 환경 대응)
+
+server.listen(PORT, HOST, () => {
+  console.log(`서버가 http://${HOST}:${PORT} 에서 실행 중입니다.`);
+  console.log(`로컬에서는 http://localhost:${PORT} 로 접속하세요.`);
 });
