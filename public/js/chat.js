@@ -111,7 +111,10 @@ function addSystemMessage(message) {
 // Utility Functions
 // ================================
 function scrollToBottom() {
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  // 모바일 성능 개선: requestAnimationFrame 사용
+  requestAnimationFrame(() => {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  });
 }
 
 function getCurrentTime() {
@@ -172,23 +175,41 @@ messageInput.addEventListener('input', () => {
   messageInput.style.height = messageInput.scrollHeight + 'px';
 });
 
-// Mobile keyboard support
+// Mobile keyboard support - iOS 개선
 messageInput.addEventListener('focus', () => {
+  // 입력창 포커스 시 화면 스크롤 및 입력창이 보이도록 조정
   setTimeout(() => {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    messageInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 300);
 });
 
+// iOS 키보드 대응 개선
 if ('visualViewport' in window) {
-  window.visualViewport.addEventListener('resize', () => {
-    const viewportHeight = window.visualViewport.height;
-    const windowHeight = window.innerHeight;
+  let lastHeight = window.visualViewport.height;
 
-    if (viewportHeight < windowHeight) {
-      document.body.style.height = `${viewportHeight}px`;
+  window.visualViewport.addEventListener('resize', () => {
+    const currentHeight = window.visualViewport.height;
+    const chatContainer = document.querySelector('.chat-container');
+
+    // 키보드가 올라오는 경우 (높이가 줄어듦)
+    if (currentHeight < lastHeight) {
+      // 컨테이너 높이를 현재 뷰포트에 맞춤
+      if (chatContainer) {
+        chatContainer.style.height = `${currentHeight}px`;
+      }
+
+      // 입력창이 보이도록 스크롤
+      setTimeout(() => {
+        messageInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
     } else {
-      document.body.style.height = '100vh';
+      // 키보드가 내려가는 경우
+      if (chatContainer) {
+        chatContainer.style.height = '100vh';
+      }
     }
+
+    lastHeight = currentHeight;
   });
 }
 
